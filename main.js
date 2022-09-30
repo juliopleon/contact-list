@@ -1,15 +1,19 @@
 let contacts = []
 
-/**
- * Called when submitting the new Contact Form
- * This method will pull data from the form
- * use the provided function to give the data an id
- * then add that data to the contacts list.
- * Then reset the form
- * *** hints:
- * *** push: resources/push.jpg
- */
+
 function addContact(event) {
+  event.preventDefault()
+  let form = event.target
+
+  let contact = {
+    id: generateId(),
+    name: form.name.value,
+    phone: form.phone.value,
+    emergencyContact: form.emergencyContact.checked
+  }
+  contacts.push(contact)
+  saveContacts()
+  form.reset()
 }
 
 /**
@@ -17,6 +21,8 @@ function addContact(event) {
  * Saves the string to localstorage at the key contacts 
  */
 function saveContacts() {
+  window.localStorage.setItem("contacts", JSON.stringify(contacts))
+  drawContacts()
 }
 
 /**
@@ -25,6 +31,10 @@ function saveContacts() {
  * the contacts array to the retrieved array
  */
 function loadContacts() {
+  let storedContacts = JSON.parse(window.localStorage.getItem("contacts"))
+  if (storedContacts) {
+    contacts = storedContacts
+  }
 }
 
 /**
@@ -33,6 +43,23 @@ function loadContacts() {
  * contacts in the contacts array
  */
 function drawContacts() {
+  let contactListElement = document.getElementById("contact-list")
+  let contactsTemplate = ""
+  contacts.forEach(contact => {
+    contactsTemplate += `
+    <div class="contact-card card mt-1 mb-1 ${contact.emergencyContact ? 'emergency-contact' : ''}">
+    <h3 class="mt-1 mb-1>${contact.name}</h3>
+    <div class="d-flex space-between">
+        <p>
+        <i class="fa fa-fw fa-phone"></i>
+        <span>${contact.phone}</span>
+        <i class="action fa fa-trash text-danger" onclick="removeContact${contact.id}
+        ')"></i>
+        </div>
+    </div>
+    `
+  })
+  contactListElement.innerHTML = contactsTemplate
 }
 
 /**
@@ -45,12 +72,18 @@ function drawContacts() {
  * @param {string} contactId 
  */
 function removeContact(contactId) {
+  let index = contacts.findIndex(contact => contact.id == contactId)
+  if (index == -1) {
+    throw new Error("Invalid Contact Id")
+  }
+  contacts.splice(index, 1)
+  saveContacts()
 }
 
-/**
- * Toggles the visibility of the AddContact Form
- */
+
+
 function toggleAddContactForm() {
+  document.getElementById('new-contact-form').classList.toggle("hidden")
 }
 
 
